@@ -1,74 +1,40 @@
 {
-  "name": "BarangayLink Development",
-  "dockerComposeFile": "docker-compose.yml",
-  "service": "backend",
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "name": "BarangayLink Codespace",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/node:1": {
-      "nodeGypDependencies": true,
       "version": "18"
     },
     "ghcr.io/devcontainers/features/python:1": {
       "version": "3.11"
-    },
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers/features/sshd:1": {
-      "version": "latest"
     }
   },
-  "forwardPorts": [3000, 3001, 5000, 5001, 5432, 6379, 8081, 5050],
+  "forwardPorts": [3000, 3001, 5000, 5001, 5432, 6379],
   "portsAttributes": {
     "3000": {
       "label": "Frontend",
-      "onAutoForward": "openBrowser"
+      "onAutoForward": "openPreview"
     },
     "3001": {
-      "label": "Backend API",
-      "onAutoForward": "notify"
+      "label": "Backend API"
     },
     "5000": {
       "label": "AI Prioritization"
     },
     "5001": {
       "label": "AI Chatbot"
-    },
-    "5432": {
-      "label": "PostgreSQL"
-    },
-    "5050": {
-      "label": "PGAdmin"
-    },
-    "8081": {
-      "label": "Redis Commander"
     }
   },
   "postCreateCommand": "bash .devcontainer/setup.sh",
-  "postAttachCommand": "echo '🚀 BarangayLink is starting...' && docker-compose up -d",
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-azuretools.vscode-docker",
-        "prisma.prisma",
-        "bradlc.vscode-tailwindcss",
-        "dsznajder.es7-react-js-snippets",
+        "ms-vscode.vscode-node-azure-pack",
         "ms-python.python",
-        "ms-python.vscode-pylance",
-        "github.vscode-github-actions",
-        "eamodio.gitlens",
-        "mongodb.mongodb-vscode",
-        "github.copilot"
-      ],
-      "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash",
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-          "source.fixAll.eslint": true
-        },
-        "files.autoSave": "afterDelay",
-        "git.autofetch": true
-      }
+        "bradlc.vscode-tailwindcss"
+      ]
     }
-  },
-  "remoteUser": "node"
+  }
 }
