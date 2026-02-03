@@ -1,0 +1,234 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: barangaylink-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-barangaylink}
+      POSTGRES_USER: ${DB_USER:-barangayadmin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secure_password}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - barangaylink-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-barangayadmin}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: barangaylink-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - barangaylink-network
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: barangaylink-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-3001}:3001"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-barangayadmin}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-barangaylink}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - barangaylink-network
+    volumes:
+      - uploads:/app/uploads
+      - logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: barangaylink-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      REACT_APP_API_URL: ${API_URL:-http://localhost:3001/api}
+      REACT_APP_WS_URL: ${WS_URL:-ws://localhost:3001}
+      REACT_APP_ENVIRONMENT: production
+    depends_on:
+      - backend
+    networks:
+      - barangaylink-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AI Prioritization Service
+  ai-prioritization:
+    build:
+      context: ./ai-services/prioritization
+      dockerfile: Dockerfile
+    container_name: barangaylink-ai-prioritization
+    restart: unless-stopped
+    ports:
+      - "${AI_PRIORITIZATION_PORT:-5000}:5000"
+    environment:
+      MODEL_PATH: ./models
+      LOG_LEVEL: info
+    networks:
+      - barangaylink-network
+    volumes:
+      - ai_models:/app/models
+      - ai_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AI Chatbot Service
+  ai-chatbot:
+    build:
+      context: ./ai-services/chatbot
+      dockerfile: Dockerfile
+    container_name: barangaylink-ai-chatbot
+    restart: unless-stopped
+    ports:
+      - "${AI_CHATBOT_PORT:-5001}:5001"
+    environment:
+      MODEL_PATH: ./models
+      LOG_LEVEL: info
+    networks:
+      - barangaylink-network
+    volumes:
+      - ./ai-services/chatbot/knowledge_base.json:/app/knowledge_base.json
+      - ./ai-services/chatbot/knowledge_base_filipino.json:/app/knowledge_base_filipino.json
+      - ai_chatbot_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Reverse Proxy (optional)
+  nginx:
+    image: nginx:alpine
+    container_name: barangaylink-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - barangaylink-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PGAdmin (Database Management - optional)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: barangaylink-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@barangaylink.ph}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - barangaylink-network
+    depends_on:
+      - postgres
+
+  # Redis Commander (Redis Management - optional)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: barangaylink-redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    ports:
+      - "${REDIS_COMMANDER_PORT:-8081}:8081"
+    networks:
+      - barangaylink-network
+    depends_on:
+      - redis
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  uploads:
+    driver: local
+  logs:
+    driver: local
+  ai_models:
+    driver: local
+  ai_logs:
+    driver: local
+  ai_chatbot_logs:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  barangaylink-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
