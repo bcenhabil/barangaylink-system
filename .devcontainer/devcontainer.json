@@ -1,0 +1,25 @@
+{
+  "name": "BarangayLink Full-Stack",
+  "image": "mcr.microsoft.com/devcontainers/universal:2", // Base image with many tools pre-installed
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "nodeGypDependencies": true,
+      "version": "18"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "forwardPorts": [3000, 3001, 5000, 5001], // Ports for frontend, backend, and AI services
+  "postCreateCommand": "bash .devcontainer/setup.sh", // Runs setup script on creation
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-node-azure-pack",
+        "prisma.prisma",
+        "ms-python.python"
+      ]
+    }
+  }
+}
