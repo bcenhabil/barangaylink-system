@@ -1,0 +1,163 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: barangaylink
+      POSTGRES_USER: barangayadmin
+      POSTGRES_PASSWORD: barangay123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U barangayadmin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile.backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://barangayadmin:barangay123@postgres:5432/barangaylink
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev_secret_1234567890_change_in_production
+      FRONTEND_URL: https://${CODESPACE_NAME}-3000.preview.app.github.dev
+      EMAIL_HOST: smtp.gmail.com
+      EMAIL_PORT: 587
+      EMAIL_USER: test@example.com
+      EMAIL_PASS: testpassword
+      CLOUDINARY_CLOUD_NAME: dev
+      CLOUDINARY_API_KEY: dev
+      CLOUDINARY_API_SECRET: dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ../backend:/app
+      - /app/node_modules
+    command: npm run dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend
+  frontend:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile.frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: https://${CODESPACE_NAME}-3001.preview.app.github.dev/api
+      REACT_APP_WS_URL: wss://${CODESPACE_NAME}-3001.preview.app.github.dev
+      REACT_APP_ENVIRONMENT: development
+    depends_on:
+      - backend
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+      - /app/build
+    command: npm run dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AI Prioritization Service
+  ai-prioritization:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile.ai
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      MODEL_PATH: ./models
+      LOG_LEVEL: info
+    volumes:
+      - ../ai-services/prioritization:/app
+      - ai_models:/app/models
+    command: python main.py
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AI Chatbot Service
+  ai-chatbot:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile.ai
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      MODEL_PATH: ./models
+      LOG_LEVEL: info
+    volumes:
+      - ../ai-services/chatbot:/app
+    command: python main.py
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5001/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Commander (Management UI)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379
+      HTTP_USER: admin
+      HTTP_PASSWORD: admin123
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+
+volumes:
+  postgres_data:
+  redis_data:
+  ai_models:
+
+networks:
+  default:
+    name: barangaylink-network
