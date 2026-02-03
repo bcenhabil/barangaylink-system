@@ -1,0 +1,92 @@
+[
+  {
+    "id": "fil-1",
+    "question": "Paano ako makakapag-submit ng request para sa tulong?",
+    "answer": "Maaari kang mag-submit ng kahilingan sa tulong sa pamamagitan ng pagpunta sa seksyon ng Serbisyo at pag-click sa 'Bagong Kahilingan'. Punan ang mga detalye tungkol sa iyong pangangailangan, at ang aming AI system ang magpa-prioritize nito para sa mas mabilis na aksyon.",
+    "category": "requests",
+    "tags": ["request", "tulong", "submit", "kahilingan"],
+    "actions": ["Pumunta sa Serbisyo", "Tingnan ang Tutorial"],
+    "language": "filipino"
+  },
+  {
+    "id": "fil-2",
+    "question": "Anong mga uri ng tulong ang available?",
+    "answer": "Nagbibigay kami ng tulong sa iba't ibang kategorya: Medikal, Pagkain, Edukasyon, Emergency, Imprastraktura, Legal, Pinansyal, at iba pang pangangailangan ng komunidad. Piliin ang kategoryang pinaka-angkop sa iyong sitwasyon kapag nag-submit ng kahilingan.",
+    "category": "services",
+    "tags": ["categories", "tulong", "uri", "available"],
+    "actions": ["Tingnan ang mga Kategorya", "Mag-submit ng Kahilingan"],
+    "language": "filipino"
+  },
+  {
+    "id": "fil-3",
+    "question": "Saan matatagpuan ang opisina ng barangay?",
+    "answer": "Ang opisina ng barangay ay matatagpuan sa [Iyong Barangay Address]. Oras ng opisina: Lunes-Biyernes, 8:00 AM hanggang 5:00 PM. Maaari mo ring tawagan kami sa (02) 123-4567.",
+    "category": "contact",
+    "tags": ["location", "address", "opisina", "barangay"],
+    "actions": ["Tingnan sa Mapa", "Numero ng Telepono"],
+    "language": "filipino"
+  },
+  {
+    "id": "fil-4",
+    "question": "Paano makakuha ng barangay clearance?",
+    "answer": "Para sa barangay clearance, pumunta sa opisina na may: 1) Valid ID, 2) Patunay ng paninirahan, 3) Layunin ng clearance. Karaniwang 1-2 araw ang processing. Ang ilang clearance ay maaari nang i-request online sa pamamagitan ng aming system.",
+    "category": "documents",
+    "tags": ["clearance", "certificate", "document", "permit"],
+    "actions": ["Listahan ng Requirements", "Online Request"],
+    "language": "filipino"
+  },
+  {
+    "id": "fil-5",
+    "question": "Paano ginagamit ang mga donasyon?",
+    "answer": "Lahat ng donasyon ay sinusubaybayan nang transparent sa aming system. Maaari mong tingnan ang donation dashboard upang makita kung paano inilalaan ang pondo. Nagbibigay kami ng resibo para sa lahat ng donasyon at regular na ulat sa epekto sa komunidad.",
+    "category": "donations",
+    "tags": ["donation", "tulong", "pera", "transparency"],
+    "actions": ["Tingnan ang Dashboard", "Mag-donate"],
+    "language": "filipino"
+  },
+  {
+    "id": "fil-6",
+    "question": "Ano ang dapat gawin sa emergency?",
+    "answer": "Sa mga emergency na nakakamatay, tumawag agad sa 911. Para sa mga non-emergency, maaari kang mag-submit ng emergency request sa aming system, at aalertuhan ang aming response team. Maaari mo ring tingnan ang Disaster Response section para sa mga tips sa paghahanda.",
+    "category": "emergency",
+    "tags": ["emergency", "sakuna", "aksidente", "tulong"],
+    "actions": ["Mag-submit ng Emergency", "Emergency Contacts"],
+    "language": "filipino"
+  },
+  {
+    "id": "fil-7",
+    "question": "Paano mag-report ng problema sa komunidad?",
+    "answer": "Maaari kang mag-report ng mga problema sa komunidad tulad ng garbage collection, street lights, o drainage issues sa pamamagitan ng Services section. Magsama ng mga larawan kung maaari, at aaksyunan ito ng aming team base sa priority.",
+    "category": "reports",
+    "tags": ["report", "problema", "issue", "reklamo"],
+    "actions": ["Mag-submit ng Report", "Tingnan ang Status"],
+    "language": "filipino"
+  },
+  {
+    "id": "fil-8",
+    "question": "Paano maging volunteer?",
+    "answer": "Upang maging volunteer, i-update ang iyong profile upang isama ang iyong skills at interests. Pagkatapos, mag-browse ng available na volunteer opportunities sa Events section o tingnan ang Volunteer Dashboard para sa mga assignments.",
+    "category": "volunteers",
+    "tags": ["volunteer", "tumulong", "boluntaryo", "opportunity"],
+    "actions": ["I-update ang Profile", "Mag-browse ng Opportunities"],
+    "language": "filipino"
+  },
+  {
+    "id": "fil-9",
+    "question": "May medical mission ba sa barangay?",
+    "answer": "Oo, may regular na medical missions ang aming barangay. Tingnan ang Events section para sa schedule ng mga darating na medical missions. Libre ang konsultasyon at gamot para sa mga kwalipikadong residente.",
+    "category": "medical",
+    "tags": ["medical", "mission", "doktor", "libre"],
+    "actions": ["Tingnan ang mga Event", "Mag-register"],
+    "language": "filipino"
+  },
+  {
+    "id": "fil-10",
+    "question": "May community pantry ba sa barangay?",
+    "answer": "Oo, may community pantry kami na bukas tuwing Martes at Huwebes, 8:00 AM - 12:00 PM. Ang pantry ay para sa mga nangangailangang pamilya. Magdala ng valid ID at proof of residency.",
+    "category": "food",
+    "tags": ["community pantry", "pagkain", "libre", "tulong"],
+    "actions": ["Tingnan ang Lokasyon", "Oras ng Operasyon"],
+    "language": "filipino"
+  }
+]
