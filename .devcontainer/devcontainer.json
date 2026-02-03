@@ -1,6 +1,8 @@
 {
-  "name": "BarangayLink Full-Stack",
-  "image": "mcr.microsoft.com/devcontainers/universal:2", // Base image with many tools pre-installed
+  "name": "BarangayLink Development",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "backend",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "nodeGypDependencies": true,
@@ -9,17 +11,64 @@
     "ghcr.io/devcontainers/features/python:1": {
       "version": "3.11"
     },
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/sshd:1": {
+      "version": "latest"
+    }
   },
-  "forwardPorts": [3000, 3001, 5000, 5001], // Ports for frontend, backend, and AI services
-  "postCreateCommand": "bash .devcontainer/setup.sh", // Runs setup script on creation
+  "forwardPorts": [3000, 3001, 5000, 5001, 5432, 6379, 8081, 5050],
+  "portsAttributes": {
+    "3000": {
+      "label": "Frontend",
+      "onAutoForward": "openBrowser"
+    },
+    "3001": {
+      "label": "Backend API",
+      "onAutoForward": "notify"
+    },
+    "5000": {
+      "label": "AI Prioritization"
+    },
+    "5001": {
+      "label": "AI Chatbot"
+    },
+    "5432": {
+      "label": "PostgreSQL"
+    },
+    "5050": {
+      "label": "PGAdmin"
+    },
+    "8081": {
+      "label": "Redis Commander"
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postAttachCommand": "echo '🚀 BarangayLink is starting...' && docker-compose up -d",
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-vscode.vscode-node-azure-pack",
+        "ms-azuretools.vscode-docker",
         "prisma.prisma",
-        "ms-python.python"
-      ]
+        "bradlc.vscode-tailwindcss",
+        "dsznajder.es7-react-js-snippets",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "github.vscode-github-actions",
+        "eamodio.gitlens",
+        "mongodb.mongodb-vscode",
+        "github.copilot"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": true
+        },
+        "files.autoSave": "afterDelay",
+        "git.autofetch": true
+      }
     }
-  }
+  },
+  "remoteUser": "node"
 }
